@@ -17,7 +17,7 @@ aws s3 mb s3://$BUCKET
 
 # generate next stage yaml file
 aws cloudformation package                   \
-    --template-file sam.yaml            \
+    --template-file template.yaml            \
     --output-template-file build/output.yaml \
     --s3-bucket $BUCKET                      
 
