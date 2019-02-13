@@ -1,0 +1,1 @@
+module.exports.tokenExpirationTime = '5m';

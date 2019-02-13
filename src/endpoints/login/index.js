@@ -1,33 +1,6 @@
 const jwt = require('jsonwebtoken');
-
-const tokenExpirationTime = '5m';
-
-const corsHeader = {
-  'Access-Control-Allow-Origin': '*',
-  'Content-Type': 'application/json',
-};
-
-const responses = {
-  successResponse: function(token) {
-    return {
-      statusCode: 200,
-      headers: corsHeader,
-      body: JSON.stringify({
-        token,
-      }),
-    }
-  },
-  errorResponse: function(statusCode, message) {
-    return {
-      statusCode: statusCode,
-      headers: corsHeader,
-      body: JSON.stringify({
-        error: true,
-        message: message,
-      }),
-    }
-  }
-}
+const responses = require('../../helpers/response');
+const {tokenExpirationTime} = require('../../helpers/token');
 
 // this should be replaced with a real authorization mechanism
 // so many things wrong with this but used just for simplification
@@ -58,6 +31,7 @@ module.exports.handler = (event, context, callback) => {
     const tokenPayload = {
       username,
     }
+
     // Issue JWT
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: tokenExpirationTime });
 

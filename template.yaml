@@ -1,16 +1,38 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: AWS SAM Tutorial
+Description: AWS Simple Authorization
+Parameters:
+  ProjectName: 
+    Type: String
+    Description: Project Name
+  SecretToken:
+    Type: String
+    NoEcho: true
+    Description: The secret key used for signing jwt
+Globals:
+  Function:
+    CodeUri: dist/endpoints
+    Runtime: nodejs8.10
+    Timeout: 30
 Resources:
+  UserTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Sub '${ProjectName}-Users'
+      PrimaryKey:
+        Name: email
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+    Tags:
+      Project: !Ref ProjectName
   HelloLambda:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: HelloLambda
-      CodeUri: src/endpoints/hello
-      Handler: index.handler
-      Runtime: nodejs8.10
+      Handler: hello.handler
       MemorySize: 128 
-      Timeout: 30
       Policies:
         - AWSLambdaBasicExecutionRole
       Events:
@@ -23,20 +45,38 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: LoginLambda
-      CodeUri: src/endpoints/login
-      Handler: index.handler
-      Runtime: nodejs8.10
+      Handler: login.handler
       MemorySize: 128 
-      Timeout: 30
       Policies:
         - AWSLambdaBasicExecutionRole
+        - AWSLambdaDynamoDBExecutionRole
       Environment:
         Variables:
-          JWT_SECRET:
+          JWT_SECRET: !Ref SecretToken
       Events:
         MyEndpoint:
           Type: Api
           Properties:
             Path: /login
             Method: post
-    
+      Tags:
+        Project: !Ref ProjectName
+  RefreshLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RefreshLambda
+      Handler: refresh.handler
+      MemorySize: 128 
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          JWT_SECRET: !Ref SecretToken
+      Events:
+        MyEndpoint:
+          Type: Api
+          Properties:
+            Path: /refresh
+            Method: post
+      Tags:
+        Project: !Ref ProjectName

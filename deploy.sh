@@ -7,6 +7,7 @@ PROJECT=sam-tutorial-$STAGE
 
 # Change the suffix on the bucket to something unique!
 BUCKET=$PROJECT-2018-12
+TOKEN=$(openssl rand -base64 12)
 
 # make a build directory to store artifacts
 rm -rf build
@@ -26,5 +27,7 @@ aws cloudformation deploy                     \
     --template-file build/output.yaml         \
     --stack-name $PROJECT                     \
     --capabilities CAPABILITY_IAM             \
-    --parameter-overrides Environment=$STAGE
+    --parameter-overrides                     \
+        ProjectName=$PROJECT                  \
+        SecretToken=$TOKEN
 
