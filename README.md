@@ -34,3 +34,7 @@ sam local start-api --env-vars env.json --debug-port 5858
   }
 }
 ```
+
+## TODO
+- [ ] Use storage utility
+- [ ] Add verification step

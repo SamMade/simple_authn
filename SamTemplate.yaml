@@ -5,6 +5,7 @@ Parameters:
   ProjectName: 
     Type: String
     Description: Project Name
+  # TODO: encrypt before sending
   SecretToken:
     Type: String
     NoEcho: true
@@ -27,20 +28,6 @@ Resources:
         WriteCapacityUnits: 1
     Tags:
       Project: !Ref ProjectName
-  HelloLambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: HelloLambda
-      Handler: hello.handler
-      MemorySize: 128 
-      Policies:
-        - AWSLambdaBasicExecutionRole
-      Events:
-        MyEndpoint:
-          Type: Api
-          Properties:
-            Path: /test
-            Method: get
   LoginLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -53,6 +40,7 @@ Resources:
       Environment:
         Variables:
           JWT_SECRET: !Ref SecretToken
+          DbTableName: !Ref UserTable
       Events:
         MyEndpoint:
           Type: Api
@@ -80,3 +68,37 @@ Resources:
             Method: post
       Tags:
         Project: !Ref ProjectName
+  RegisterLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: RegisterLambda
+      Handler: register.handler
+      MemorySize: 128 
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaDynamoDBExecutionRole
+      Environment:
+        Variables:
+          DbTableName: !Ref UserTable
+      Events:
+        MyEndpoint:
+          Type: Api
+          Properties:
+            Path: /register
+            Method: post
+      Tags:
+        Project: !Ref ProjectName
+  # HelloLambda:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: HelloLambda
+  #     Handler: hello.handler
+  #     MemorySize: 128 
+  #     Policies:
+  #       - AWSLambdaBasicExecutionRole
+  #     Events:
+  #       MyEndpoint:
+  #         Type: Api
+  #         Properties:
+  #           Path: /test
+  #           Method: get

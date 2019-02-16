@@ -10,11 +10,11 @@ function extractInputs(event) {
   return event.headers.Authorization;
 }
 
-module.exports.handler = (event, context, callback) => {
+module.exports.handler = async (event) => {
   try {
     var authorizationHeader = extractInputs(event);
   } catch (e) {
-    callback(null, responses.errorResponse(400, e.message));
+    return responses.errorResponse(400, e.message);
   }
 
   try {
@@ -33,8 +33,11 @@ module.exports.handler = (event, context, callback) => {
     const newtoken = jwt.sign(payload, process.env.JWT_SECRET, jwtSignOptions);
 
     // Return response
-    callback(null, responses.successResponse(newtoken));
+    return responses.successResponseText(200, newtoken);
   } catch (e) {
-    callback(null, responses.errorResponse(400, e.message));
+    if (e.name === 'TokenExpiredError') {
+      return responses.errorResponse(401, e.message);
+    }
+    return responses.errorResponse(400, e.message);
   }
 };

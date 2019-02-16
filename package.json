@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
+  "sideEffects": false,
   "dependencies": {
+    "aws-sdk": "^2.402.0",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^8.4.0"
   },
   "devDependencies": {
@@ -16,7 +19,7 @@
     "deploy:code": "./deploy.sh",
     "deploy": "npm-run-all --serial build:code deploy:code",
     "watch:build": "webpack --config webpack.config.js --watch",
-    "watch:server": "sam local start-api --env-vars env.json",
+    "watch:server": "sam local start-api --env-vars env.json --template SamTemplate.yaml",
     "start": "npm-run-all --parallel watch:server watch:build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
