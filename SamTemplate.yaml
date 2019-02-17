@@ -5,6 +5,9 @@ Parameters:
   ProjectName: 
     Type: String
     Description: Project Name
+  SupportEmail: 
+    Type: String
+    Description: Support email that validation code is from
   # TODO: encrypt before sending
   SecretToken:
     Type: String
@@ -12,7 +15,6 @@ Parameters:
     Description: The secret key used for signing jwt
 Globals:
   Function:
-    CodeUri: dist/endpoints
     Runtime: nodejs8.10
     Timeout: 30
 Resources:
@@ -32,11 +34,12 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: LoginLambda
-      Handler: login.handler
+      Handler: index.handler
+      CodeUri: dist/login
       MemorySize: 128 
       Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaDynamoDBExecutionRole
+        - DynamoDBReadPolicy:
+            TableName: !Ref UserTable
       Environment:
         Variables:
           JWT_SECRET: !Ref SecretToken
@@ -53,10 +56,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: RefreshLambda
-      Handler: refresh.handler
+      Handler: index.handler
+      CodeUri: dist/refresh
       MemorySize: 128 
-      Policies:
-        - AWSLambdaBasicExecutionRole
       Environment:
         Variables:
           JWT_SECRET: !Ref SecretToken
@@ -72,14 +74,18 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: RegisterLambda
-      Handler: register.handler
+      Handler: index.handler
+      CodeUri: dist/register
       MemorySize: 128 
       Policies:
-        - AWSLambdaBasicExecutionRole
-        - AWSLambdaDynamoDBExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserTable
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ValidateSendEmailLambda
       Environment:
         Variables:
           DbTableName: !Ref UserTable
+          ValidateSendEmailLambda: !Ref ValidateSendEmailLambda
       Events:
         MyEndpoint:
           Type: Api
@@ -88,14 +94,30 @@ Resources:
             Method: post
       Tags:
         Project: !Ref ProjectName
+  ValidateSendEmailLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ValidateSendEmailLambda
+      Handler: index.handler
+      CodeUri: dist/validateSendEmail
+      MemorySize: 128 
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UserTable
+        - SESCrudPolicy:
+            IdentityName: !Ref SupportEmail
+      Environment:
+        Variables:
+          FromSupportEmail: !Ref SupportEmail
+      Tags:
+        Project: !Ref ProjectName
   # HelloLambda:
   #   Type: AWS::Serverless::Function
   #   Properties:
   #     FunctionName: HelloLambda
-  #     Handler: hello.handler
+  #     Handler: index.handler
+  #     CodeUri: dist/hello
   #     MemorySize: 128 
-  #     Policies:
-  #       - AWSLambdaBasicExecutionRole
   #     Events:
   #       MyEndpoint:
   #         Type: Api

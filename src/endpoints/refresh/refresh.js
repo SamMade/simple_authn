@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const responses = require('../../helpers/response');
-const {tokenExpirationTime} = require('../../helpers/token');
+const token = require('../../helpers/token');
 
 function extractInputs(event) {
   if (!event.headers || !event.headers.Authorization) {
@@ -18,17 +18,12 @@ module.exports.handler = async (event) => {
   }
 
   try {
-    if (!authorizationHeader.startsWith('Bearer ')) {
-      throw new Error('MALFORMED_TOKEN');
-    }
-    const token = authorizationHeader.substring('Bearer '.length);
-
-    const payload = jwt.verify(token, process.env.JWT_SECRET, ["HS256"]);
+    const payload = token.validate(authorizationHeader);
     delete payload.iat;
     delete payload.exp;
     delete payload.nbf;
     delete payload.jti;
-    const jwtSignOptions = Object.assign({ }, this.options, { expiresIn: tokenExpirationTime });
+    const jwtSignOptions = Object.assign({ }, this.options, { expiresIn: token.tokenExpirationTime });
 
     const newtoken = jwt.sign(payload, process.env.JWT_SECRET, jwtSignOptions);
 

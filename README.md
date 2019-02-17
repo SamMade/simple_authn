@@ -22,15 +22,33 @@ Debug:
 sam local start-api --env-vars env.json --debug-port 5858
 ```
 
-## ENV file
+
+
+## Deploy
 
 ```
+./deploy.sh <projectname> <environment> <email>
+```
+
+## ENV file
+
+To be able to debug locally, create an `env.json` file at the root with:
+
+```json
 {
   "LoginLambda": {
-    "JWT_SECRET": "my_secret_here"
+    "JWT_SECRET": "my_secret_here",
+    "DbTableName": "table-name-here"
   },
   "RefreshLambda": {
     "JWT_SECRET": "my_secret_here"
+  },
+  "RegisterLambda": {
+    "DbTableName": "table-name-here",
+    "ValidateSendEmailLambda": "ValidateSendEmailLambda"
+  },
+  "ValidateSendEmailLambda": {
+    "FromSupportEmail": "email-here"
   }
 }
 ```

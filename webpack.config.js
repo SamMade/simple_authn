@@ -6,10 +6,11 @@ module.exports = {
     'login': './src/endpoints/login/login.js',
     'refresh': './src/endpoints/refresh/refresh.js',
     'register': './src/endpoints/register/register.js',
+    'validateSendEmail': './src/endpoints/validate/sendEmail.js',
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'dist', 'endpoints'),
+    filename: '[name]/index.js',
+    path: path.resolve(__dirname, 'dist'),
     libraryTarget: 'commonjs2',
   },
   externals: {
