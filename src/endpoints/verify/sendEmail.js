@@ -10,16 +10,21 @@ const ses = new AWS.SES({ apiVersion: "2010-12-01" });
  */
 module.exports.handler = async (event) => {
   console.log('Handling confirmation email to', event);
+
+  try {
+    var { email, name, verifyCode } = event;
+  } catch (e) {
+    console.log(e);
+    return new Error('INVALID_INPUT');
+  }
   
-  if (!event.email.match(/^[^@]+@[^@]+$/)) {
-    console.log('Not sending: invalid email address', event);
-    context.done(null, "Failed");
-    return;
+  if (!email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)) {
+    console.log('Not sending: invalid email address', email);
+    return new Error('INVALID_EMAIL');
   }
 
-  const name = event.name;
-  const VERIFICATION_LINK = event.verifyCode;
-  const SITE_NAME = "TEST SIte";
+  const VERIFICATION_LINK = verifyCode;
+  const SITE_NAME = process.env.SiteName;
 
   const htmlBody = `
     <!DOCTYPE html>
@@ -47,7 +52,7 @@ module.exports.handler = async (event) => {
   // Create sendEmail params
   const params = {
     Destination: {
-      ToAddresses: [event.email]
+      ToAddresses: [email]
     },
     Message: {
       Body: {
@@ -62,10 +67,10 @@ module.exports.handler = async (event) => {
       },
       Subject: {
         Charset: "UTF-8",
-        Data: "Thanks for registering with ACME!"
+        Data: `Thanks for registering with ${SITE_NAME}!`
       }
     },
-    Source: process.env.FromSupportEmail
+    Source: `DO-NOT-REPLY@${process.env.SupportEmailDomain}`
   };
 
   // Create the promise and SES service object

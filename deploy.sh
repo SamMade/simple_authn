@@ -25,10 +25,11 @@ aws cloudformation package                   \
 
 # the actual deployment step
 aws cloudformation deploy                     \
-    --template-file dist/output.yaml         \
+    --template-file dist/output.yaml          \
     --stack-name $PROJECT                     \
     --capabilities CAPABILITY_IAM             \
     --parameter-overrides                     \
         ProjectName=$PROJECT                  \
         SecretToken=$TOKEN                    \
-        SupportEmail=$SUPPORT_EMAIL
+        SiteName=${1}                         \
+        SupportEmailDomain=$SUPPORT_EMAIL

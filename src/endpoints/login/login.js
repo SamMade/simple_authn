@@ -35,15 +35,13 @@ module.exports.handler = async (event) => {
 };
 
 const getUser = async (username) => {
-  const user = await ddb.get({
+  return ddb.get({
     TableName: process.env.DbTableName,
     Key: {
       'email': username,
     },
     ProjectionExpression:"first_name, last_name, password",
   }).promise();
-
-  return user;
 }
 
 const comparePassword = async (password, userPasswordHash) => {

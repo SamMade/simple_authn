@@ -4,10 +4,13 @@ Description: AWS Simple Authorization
 Parameters:
   ProjectName: 
     Type: String
-    Description: Project Name
-  SupportEmail: 
+    Description: Project Name (use alpha-numeric and '-' only)
+  SiteName:
     Type: String
-    Description: Support email that validation code is from
+    Description: Name of the site
+  SupportEmailDomain: 
+    Type: String
+    Description: Support email that verification code is from
   # TODO: encrypt before sending
   SecretToken:
     Type: String
@@ -19,17 +22,41 @@ Globals:
     Timeout: 30
 Resources:
   UserTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub '${ProjectName}-Users'
-      PrimaryKey:
-        Name: email
-        Type: String
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
-    Tags:
-      Project: !Ref ProjectName
+      KeySchema: 
+        - 
+          AttributeName: "email"
+          KeyType: "HASH"
+      AttributeDefinitions: 
+        - 
+          AttributeName: "email"
+          AttributeType: "S"
+        - 
+          AttributeName: "verify"
+          AttributeType: "S"
+      GlobalSecondaryIndexes: 
+        - 
+          IndexName: "VerifyIndex"
+          KeySchema: 
+            - 
+              AttributeName: "verify"
+              KeyType: "HASH"
+          Projection: 
+            NonKeyAttributes: 
+              - "account_status"
+            ProjectionType: "INCLUDE"
+          ProvisionedThroughput: 
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      Tags:
+        - 
+          Key: "Project"
+          Value: !Ref ProjectName
   LoginLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -81,11 +108,11 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref UserTable
         - LambdaInvokePolicy:
-            FunctionName: !Ref ValidateSendEmailLambda
+            FunctionName: !Ref VerifySendEmailLambda
       Environment:
         Variables:
           DbTableName: !Ref UserTable
-          ValidateSendEmailLambda: !Ref ValidateSendEmailLambda
+          VerifySendEmailLambda: !Ref VerifySendEmailLambda
       Events:
         MyEndpoint:
           Type: Api
@@ -94,21 +121,41 @@ Resources:
             Method: post
       Tags:
         Project: !Ref ProjectName
-  ValidateSendEmailLambda:
+  VerifyLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ValidateSendEmailLambda
+      FunctionName: VerifyLambda
       Handler: index.handler
-      CodeUri: dist/validateSendEmail
+      CodeUri: dist/verify
       MemorySize: 128 
       Policies:
-        - DynamoDBReadPolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref UserTable
-        - SESCrudPolicy:
-            IdentityName: !Ref SupportEmail
       Environment:
         Variables:
-          FromSupportEmail: !Ref SupportEmail
+          DbTableName: !Ref UserTable
+      Events:
+        MyEndpoint:
+          Type: Api
+          Properties:
+            Path: /verify/{verifyID}
+            Method: get
+      Tags:
+        Project: !Ref ProjectName
+  VerifySendEmailLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: VerifySendEmailLambda
+      Handler: index.handler
+      CodeUri: dist/verifySendEmail
+      MemorySize: 128 
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: !Ref SupportEmailDomain
+      Environment:
+        Variables:
+          SupportEmailDomain: !Ref SupportEmailDomain
+          SiteName: !Ref SiteName
       Tags:
         Project: !Ref ProjectName
   # HelloLambda:

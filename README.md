@@ -22,12 +22,10 @@ Debug:
 sam local start-api --env-vars env.json --debug-port 5858
 ```
 
-
-
 ## Deploy
 
 ```
-./deploy.sh <projectname> <environment> <email>
+./deploy.sh <projectname> <environment> <email_domain>
 ```
 
 ## ENV file
@@ -47,12 +45,17 @@ To be able to debug locally, create an `env.json` file at the root with:
     "DbTableName": "table-name-here",
     "ValidateSendEmailLambda": "ValidateSendEmailLambda"
   },
+  "VerifyLambda": {
+    "DbTableName": "table-name-here",
+  },
   "ValidateSendEmailLambda": {
-    "FromSupportEmail": "email-here"
+    "FromSupportEmail": "email-here",
+    "SiteName": "Example Site"
   }
 }
 ```
 
 ## TODO
 - [ ] Use storage utility
-- [ ] Add verification step
+- [x] Add verification step
+- [ ] Lock account after number of failed attempts

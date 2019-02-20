@@ -6,7 +6,8 @@ module.exports = {
     'login': './src/endpoints/login/login.js',
     'refresh': './src/endpoints/refresh/refresh.js',
     'register': './src/endpoints/register/register.js',
-    'validateSendEmail': './src/endpoints/validate/sendEmail.js',
+    'verify': './src/endpoints/verify/verify.js',
+    'verifySendEmail': './src/endpoints/verify/sendEmail.js',
   },
   output: {
     filename: '[name]/index.js',

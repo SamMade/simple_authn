@@ -3,6 +3,7 @@ const { hash } = require('bcryptjs');
 const { randomBytes } = require('crypto');
 const { promisify } = require('util');
 const responses = require('../../helpers/response');
+const CONSTANTS = require('../../helpers/constants');
 
 const hashAsync = promisify(hash);
 const randomBytesAsync = promisify(randomBytes);
@@ -29,7 +30,7 @@ module.exports.handler = async (event) => {
       last_name,
     });
 
-    invokeEmail({
+    await invokeEmail({
       email,
       name: first_name,
       verifyCode: salts[1]
@@ -54,12 +55,12 @@ const generateData = (password) => {
 };
 
 const saveRegistration = (user) => {
-  console.log('Save User to DB');
+  console.log(`Save User (${user.email}) to DB`);
   return ddb.put({
     TableName: process.env.DbTableName,
     Item: {
       'email': user.email,
-      'status': 'UNVERIFIED',
+      'account_status': CONSTANTS.ACCOUNT_STATUS.UNVERIFIED,
       'password': user.password,
       'first_name' : user.first_name,
       'last_name' : user.last_name,
@@ -73,10 +74,15 @@ const saveRegistration = (user) => {
   }).promise();
 };
 
+/**
+ * Invokes the lambda that sends an email
+ * @param {*} event 
+ */
 const invokeEmail = (event) => {
   console.log('Invoke Email')
   return lambda.invoke({
-    FunctionName: process.env.ValidateSendEmailLambda,
+    FunctionName: process.env.VerifySendEmailLambda,
+    InvocationType: "Event",
     Payload: JSON.stringify(event)
   }).promise();
 };
