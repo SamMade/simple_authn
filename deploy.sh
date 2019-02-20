@@ -29,6 +29,7 @@ aws cloudformation deploy                     \
     --stack-name $PROJECT                     \
     --capabilities CAPABILITY_IAM             \
     --parameter-overrides                     \
+        StageName=$STAGE                      \
         ProjectName=$PROJECT                  \
         SecretToken=$TOKEN                    \
         SiteName=${1}                         \
