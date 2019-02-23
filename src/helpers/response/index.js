@@ -1,5 +1,4 @@
 const globalHeaders = {
-  'Access-Control-Allow-Origin': '*',
 };
 
 const headersJson = Object.assign({}, globalHeaders, {'Content-Type': 'application/json'});

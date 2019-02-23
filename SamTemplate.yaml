@@ -23,6 +23,11 @@ Globals:
   Function:
     Runtime: nodejs8.10
     Timeout: 30
+  Api:
+    Cors: 
+      AllowMethods: "'OPTIONS,GET,POST,PUT,DELETE'"
+      AllowHeaders: "'Content-Type,Authorization,X-Api-Key'"
+      AllowOrigin: "'*'"
 Resources:
   UserApiGateway:
     Type: AWS::Serverless::Api
